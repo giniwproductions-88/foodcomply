@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TruckComply — Never Miss a Permit Renewal Again</title>
+    <meta name="description" content="Permit tracking and compliance management built for food truck operators. Stop the spreadsheet chaos.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --yellow: #F7B32B;
+            --yellow-dark: #D99A1F;
+            --charcoal: #1C1C1C;
+            --slate: #2D2D2D;
+            --cream: #FAF8F5;
+            --gray: #6B6B6B;
+            --success: #2D936C;
+            --danger: #C1292E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', -apple-system, sans-serif;
+            background: var(--charcoal);
+            color: var(--cream);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Subtle noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            padding: 24px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.25rem;
+            color: var(--yellow);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--yellow);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(247, 179, 43, 0.15);
+            color: var(--yellow);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(247, 179, 43, 0.3);
+        }
+
+        h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(2rem, 8vw, 3.25rem);
+            line-height: 1.1;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        h1 span {
+            color: var(--yellow);
+        }
+
+        .subhead {
+            font-size: 1.125rem;
+            color: var(--gray);
+            max-width: 480px;
+            margin: 0 auto 48px;
+        }
+
+        /* Pain Points */
+        .pain-section {
+            background: var(--slate);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 48px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .pain-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .pain-list {
+            list-style: none;
+        }
+
+        .pain-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .pain-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .pain-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(247, 179, 43, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .pain-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: var(--yellow);
+        }
+
+        .pain-text h3 {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .pain-text p {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .validation-note {
+            font-size: 0.75rem;
+            color: var(--gray);
+            text-align: center;
+            margin-top: 16px;
+            font-style: italic;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding-bottom: 60px;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, rgba(247, 179, 43, 0.1) 0%, rgba(247, 179, 43, 0.05) 100%);
+            border: 2px solid var(--yellow);
+            border-radius: 16px;
+            padding: 40px 32px;
+            margin-bottom: 32px;
+        }
+
+        .cta-box h2 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .cta-box p {
+            color: var(--gray);
+            margin-bottom: 24px;
+        }
+
+        .email-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 480px) {
+            .email-form {
+                flex-direction: row;
+            }
+        }
+
+        .email-input {
+            flex: 1;
+            padding: 16px 20px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--charcoal);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: var(--cream);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .email-input::placeholder {
+            color: var(--gray);
+        }
+
+        .email-input:focus {
+            border-color: var(--yellow);
+        }
+
+        .submit-btn {
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            background: var(--yellow);
+            color: var(--charcoal);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            background: var(--yellow-dark);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .trust-line {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .trust-line strong {
+            color: var(--cream);
+        }
+
+        /* Social Proof */
+        .social-proof {
+            padding: 32px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .proof-text {
+            font-size: 0.875rem;
+            color: var(--gray);
+        }
+
+        .proof-text span {
+            color: var(--yellow);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            padding: 32px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .texas-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray);
+        }
+
+        .texas-badge svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--yellow);
+        }
+
+        /* Success State */
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .success-message h3 {
+            color: var(--success);
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .success-message p {
+            color: var(--gray);
+        }
+
+        .form-container.submitted .email-form {
+            display: none;
+        }
+
+        .form-container.submitted .success-message {
+            display: block;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero, .pain-section, .cta-section {
+            animation: fadeUp 0.6s ease-out backwards;
+        }
+
+        .pain-section {
+            animation-delay: 0.1s;
+        }
+
+        .cta-section {
+            animation-delay: 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#1C1C1C" stroke-width="2.5">
+                        <path d="M9 12l2 2 4-4"/>
+                        <rect x="3" y="5" width="18" height="14" rx="2"/>
+                    </svg>
+                </div>
+                TruckComply
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="badge">Early Access — Texas Launch</div>
+            <h1>Never Miss a <span>Permit Renewal</span> Again</h1>
+            <p class="subhead">
+                Permit tracking built for food truck operators. 
+                No more spreadsheets. No more surprise shutdowns.
+            </p>
+        </section>
+
+        <section class="pain-section">
+            <div class="pain-header">What we're building</div>
+            <ul class="pain-list">
+                <li class="pain-item">
+                    <div class="pain-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                            <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
+                        </svg>
+                    </div>
+                    <div class="pain-text">
+                        <h3>All your permits in one dashboard</h3>
+                        <p>Every license, permit, and certification across every city you operate in. One view.</p>
+                    </div>
+                </li>
+                <li class="pain-item">
+                    <div class="pain-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+                            <path d="M22 17H2a3 3 0 003 3h14a3 3 0 003-3z"/>
+                            <path d="M6 17V3a1 1 0 011-1h10a1 1 0 011 1v14"/>
+                            <path d="M10 6h4M10 10h4"/>
+                        </svg>
+                    </div>
+                    <div class="pain-text">
+                        <h3>Reminders before you're in trouble</h3>
+                        <p>Automatic alerts 90, 60, and 30 days before expiration. Via text or email.</p>
+                    </div>
+                </li>
+                <li class="pain-item">
+                    <div class="pain-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="pain-text">
+                        <h3>Know what each city requires</h3>
+                        <p>Expanding to a new location? See exactly what permits you need before you commit.</p>
+                    </div>
+                </li>
+            </ul>
+            <p class="validation-note">* Features prioritized based on operator feedback</p>
+        </section>
+
+        <section class="cta-section">
+            <div class="cta-box">
+                <h2>Get Early Access</h2>
+                <p>Be first in line when we launch. Early users get founder pricing.</p>
+                
+                <div class="form-container" id="formContainer">
+                    <form class="email-form" id="emailForm">
+                        <input 
+                            type="email" 
+                            class="email-input" 
+                            placeholder="your@email.com" 
+                            required
+                            id="emailInput"
+                        >
+                        <button type="submit" class="submit-btn">Notify Me</button>
+                    </form>
+                    
+                    <div class="success-message">
+                        <h3>✓ You're on the list</h3>
+                        <p>We'll reach out when early access opens.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="trust-line">
+                <strong>No spam.</strong> Just launch updates and early access.
+            </p>
+        </section>
+
+        <section class="social-proof">
+            <p class="proof-text">
+                <span>Built with Texas food truck operators</span> — not for them.
+            </p>
+        </section>
+
+        <footer>
+            <p class="footer-text">© 2026 TruckComply. All rights reserved.</p>
+            <div class="texas-badge">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2L2 12h3v8h14v-8h3L12 2z"/>
+                </svg>
+                Launching in Texas
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Simple form handling - replace with actual backend integration
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            
+            // TODO: Send to backend (Supabase, Airtable, etc.)
+            console.log('Email captured:', email);
+            
+            // Show success state
+            document.getElementById('formContainer').classList.add('submitted');
+            
+            // Optional: Send to webhook, Zapier, etc.
+            // fetch('YOUR_WEBHOOK_URL', {
+            //     method: 'POST',
+            //     body: JSON.stringify({ email: email }),
+            //     headers: { 'Content-Type': 'application/json' }
+            // });
+        });
+    </script>
+</body>
+</html>
