@@ -2,9 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TruckComply — Never Miss a Permit Renewal Again</title>
-    <meta name="description" content="Permit tracking and compliance management built for food truck operators. Stop the spreadsheet chaos.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Basic SEO -->
+    <title>FoodTruckComply — Never Miss a Permit Renewal Again</title>
+    <meta name="description" content="Permit and compliance tracking built for food truck operators. Track renewals, avoid shutdowns, and know city requirements. Launching in Texas.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://foodtruckcomply.com/">
+    
+    <!-- Open Graph (Social Sharing) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="FoodTruckComply — Never Miss a Permit Renewal Again">
+    <meta property="og:description" content="Compliance and permit tracking built specifically for food truck operators. No spreadsheets. No surprise shutdowns.">
+    <meta property="og:url" content="https://foodtruckcomply.com/">
+    <meta property="og:site_name" content="FoodTruckComply">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FoodTruckComply — Never Miss a Permit Renewal Again">
+    <meta name="twitter:description" content="Permit tracking and renewal alerts built for food truck operators. Launching in Texas.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -238,6 +254,7 @@
             gap: 12px;
             max-width: 400px;
             margin: 0 auto;
+            position: relative;
         }
 
         @media (min-width: 480px) {
@@ -289,6 +306,12 @@
 
         .submit-btn:active {
             transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .trust-line {
@@ -353,10 +376,6 @@
             padding: 24px;
         }
 
-        .success-message.show {
-            display: block;
-        }
-
         .success-message h3 {
             color: var(--success);
             font-size: 1.25rem;
@@ -364,6 +383,23 @@
         }
 
         .success-message p {
+            color: var(--gray);
+        }
+
+        /* Already on list state */
+        .already-message {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .already-message h3 {
+            color: var(--yellow);
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+        }
+
+        .already-message p {
             color: var(--gray);
         }
 
@@ -485,12 +521,26 @@
                             required
                             id="emailInput"
                         >
+                        <!-- Honeypot field - hidden from humans, bots fill it -->
+                        <input 
+                            type="text" 
+                            name="website" 
+                            id="honeypot"
+                            style="position: absolute; left: -9999px; opacity: 0;"
+                            tabindex="-1"
+                            autocomplete="off"
+                        >
                         <button type="submit" class="submit-btn">Notify Me</button>
                     </form>
                     
                     <div class="success-message">
                         <h3>✓ You're on the list</h3>
                         <p>We'll reach out when early access opens.</p>
+                    </div>
+
+                    <div class="already-message" id="alreadyMessage">
+                        <h3>✓ You're already on the list</h3>
+                        <p>We've got your email. Stay tuned!</p>
                     </div>
                 </div>
             </div>
@@ -518,41 +568,42 @@
     </div>
 
     <script>
-        // Supabase configuration
-        const SUPABASE_URL = 'https://pdktesikntvikazswcyb.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_tf872byQmp67N_DUQfgLTg_iHCPhbxU';
+        // Edge Function endpoint (no API key exposed)
+        const FUNCTION_URL = 'https://pdktesikntvikazswcyb.supabase.co/functions/v1/join-waitlist';
 
         document.getElementById('emailForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
             const email = document.getElementById('emailInput').value;
+            const honeypot = document.getElementById('honeypot');
             const submitBtn = document.querySelector('.submit-btn');
             
-            // Disable button while submitting
             submitBtn.disabled = true;
             submitBtn.textContent = 'Saving...';
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+                const response = await fetch(FUNCTION_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Prefer': 'return=minimal'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email: email })
+                    body: JSON.stringify({ 
+                        email: email,
+                        source: 'landing',
+                        honeypot: honeypot ? honeypot.value : ''
+                    })
                 });
 
+                const data = await response.json();
+
                 if (response.ok) {
-                    // Success
                     document.getElementById('formContainer').classList.add('submitted');
                 } else if (response.status === 409) {
-                    // Duplicate email
-                    alert('You\'re already on the list!');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Notify Me';
+                    // Duplicate email - show friendly message
+                    document.getElementById('emailForm').style.display = 'none';
+                    document.getElementById('alreadyMessage').style.display = 'block';
                 } else {
-                    throw new Error('Submission failed');
+                    throw new Error(data.error || 'Submission failed');
                 }
             } catch (error) {
                 console.error('Error:', error);
